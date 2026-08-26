@@ -196,5 +196,74 @@ VALUES
     (6, 'PAGO AGOSTO',     'PAGO',      650.00,  'PAG-000002'),
     (7, 'MERCADO LIBRE',     'RETIRO',      3000.00, 'PAG-000003');
 
+INSERT INTO transacciones
+    (id_cuenta, concepto, tipo, monto, referencia)
+VALUES
+    (3, 'NOMINA 1 AGOSTO',  'DEPOSITO', 100.00, 'DEP-000001'),
+	(3, 'NOMINA 1 AGOSTO',  'DEPOSITO', 100.00, 'DEP-000001'),
+	(3, 'NOMINA 1 AGOSTO',  'DEPOSITO', 100.00, 'DEP-000001');
+
+INSERT INTO transacciones
+    (id_cuenta, concepto, tipo, monto, referencia)
+VALUES
+    (4, 'NOMINA 1 AGOSTO',  'DEPOSITO', 10.00, 'DEP-000001'),
+	(4, 'NOMINA 1 AGOSTO',  'DEPOSITO', 50.00, 'DEP-000001');
+
+alter table cuentas 
+	add column fecha_limite timestamp null;
+
+update cuentas set fecha_limite = '2026-07-15 00:00:00' where id_cuenta = 3;
+update cuentas set fecha_limite = '2026-09-10 00:00:00' where id_cuenta = 4;
+update cuentas set fecha_limite = '2026-08-15 00:00:00' where id_cuenta = 5;
+update cuentas set fecha_limite = '2026-09-1 00:00:00' where id_cuenta = 6;
+update cuentas set fecha_limite = '2026-09-20 00:00:00' where id_cuenta = 7;
 
 
+
+-- =============================================
+-- CONSULTAS
+-- =============================================
+
+-- a) cuentas vencidas
+select 
+	CONCAT(clientes.nombre,' ',clientes.apellido_paterno,' ',clientes.apellido_materno ) as nombre,
+	saldo,
+	extract(day from (now() - cuentas.fecha_limite)) as dias_atraso
+from cuentas
+inner join clientes on clientes.id_cliente = cuentas.id_cliente 
+where saldo > 0 and fecha_limite < now();
+
+-- b) top 5 clientes por volumen transaccionado
+select 
+	CONCAT(c.nombre,' ',c.apellido_paterno,' ',c.apellido_materno ) as nombre, c.id_cliente, count(t.id_transaccion) as transacciones
+from clientes c
+inner join cuentas cu on cu.id_cliente = c.id_cliente 
+inner join transacciones t on t.id_cuenta = cu.id_cuenta
+where t.fecha > now() - interval '30 days'
+group by c.id_cliente
+order by transacciones desc
+limit 5;
+
+-- c) posibles transacciones duplicadas
+SELECT
+    c.id_cliente,
+    c.nombre,
+    t1.id_transaccion AS transaccion_1,
+    t2.id_transaccion AS transaccion_2,
+    t1.monto,
+    t1.fecha AS fecha_1,
+    t2.fecha AS fecha_2,
+    ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) AS diferencia_segundos
+FROM transacciones t1
+INNER JOIN transacciones t2
+    ON t1.id_transaccion < t2.id_transaccion
+    AND t1.monto = t2.monto
+    AND ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) < 300
+INNER JOIN cuentas cu1
+    ON cu1.id_cuenta = t1.id_cuenta
+INNER JOIN cuentas cu2
+    ON cu2.id_cuenta = t2.id_cuenta
+    AND cu1.id_cliente = cu2.id_cliente
+INNER JOIN clientes c
+    ON c.id_cliente = cu1.id_cliente
+ORDER BY diferencia_segundos;
