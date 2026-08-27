@@ -23,6 +23,7 @@ export default function PanelTransacciones() {
 
   useEffect(() => {
 
+    //aborta transacciones asincronas y se genera una nueva
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;

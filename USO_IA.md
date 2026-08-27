@@ -13,3 +13,4 @@
 - apoyo para generar formatos en fecha y montos MXN
 - apoyo para generar estructura inicial del proyecto REACT
 - apoyo para generar función exportar CSV
+- apoyo para usar AbortController - para cancelar operaciones asíncronas
