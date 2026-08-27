@@ -14,3 +14,6 @@
 - apoyo para generar estructura inicial del proyecto REACT
 - apoyo para generar función exportar CSV
 - apoyo para usar AbortController - para cancelar operaciones asíncronas
+
+## ejercicio 4 - CLAUDE
+- apoyo para generar diagramas ASCII en md y flujo de token JWT 
