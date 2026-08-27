@@ -245,25 +245,28 @@ order by transacciones desc
 limit 5;
 
 -- c) posibles transacciones duplicadas
-SELECT
-    c.id_cliente,
-    c.nombre,
-    t1.id_transaccion AS transaccion_1,
-    t2.id_transaccion AS transaccion_2,
-    t1.monto,
-    t1.fecha AS fecha_1,
-    t2.fecha AS fecha_2,
-    ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) AS diferencia_segundos
-FROM transacciones t1
-INNER JOIN transacciones t2
-    ON t1.id_transaccion < t2.id_transaccion
-    AND t1.monto = t2.monto
-    AND ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) < 300
-INNER JOIN cuentas cu1
-    ON cu1.id_cuenta = t1.id_cuenta
-INNER JOIN cuentas cu2
-    ON cu2.id_cuenta = t2.id_cuenta
-    AND cu1.id_cliente = cu2.id_cliente
-INNER JOIN clientes c
-    ON c.id_cliente = cu1.id_cliente
-ORDER BY diferencia_segundos;
+
+select 
+	cl.id_cliente, 
+	cl.nombre, 
+	t1.id_transaccion AS transaccion_1, 
+	t2.id_transaccion AS transaccion_2, 
+	t1.monto, 
+	t1.fecha AS fecha_1, 
+	t2.fecha AS fecha_2, 
+	ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) AS diferencia_segundos
+from transacciones t1
+inner join transacciones t2 
+	on t1.id_transaccion < t2.id_transaccion
+	and t1.monto  = t2.monto
+	and ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) < (5*60) --5 minutos
+inner join cuentas c1
+	on c1.id_cuenta = t1.id_cuenta
+inner join cuentas c2
+	on c2.id_cuenta = t2.id_cuenta
+	and c1.id_cuenta = c2.id_cuenta
+inner join clientes cl
+	on cl.id_cliente = c1.id_cliente
+order by diferencia_segundos;
+
+
