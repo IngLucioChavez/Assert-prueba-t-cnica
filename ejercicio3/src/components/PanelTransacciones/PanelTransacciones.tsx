@@ -27,12 +27,14 @@ export default function PanelTransacciones() {
     const controller = new AbortController();
     controllerRef.current = controller;
 
+    //definiendo estado inicial
     dispatch({ type: 'FETCH_INICIO' });
 
     //promesa que retornado la data mock
     mockFetch(state.pagina, state.filtro)
       .then((respuesta) => {
         if (controller.signal.aborted) return;
+        // se define estado en caso de exito
         dispatch({
           type: 'FETCH_EXITO',
           payload: { datos: respuesta.data, totalPaginas: respuesta.pages },
@@ -42,6 +44,7 @@ export default function PanelTransacciones() {
         if (controller.signal.aborted) return;
         const mensaje =
           err instanceof Error ? err.message : 'Error desconocido al obtener las transacciones.';
+        //se define estado en caso de error
         dispatch({ type: 'FETCH_ERROR', payload: mensaje });
       });
 
@@ -49,20 +52,23 @@ export default function PanelTransacciones() {
       controller.abort();
     };
 
-  }, [state.pagina, state.filtro, state.intentoId]);
+  }, [state.pagina, state.filtro, state.intentoId]); //useEffect se activa en primer renderizado y cuando alguna de estas opciones cambie
 
   const cambiarFiltro = (filtro: FiltroEstado) => {
     if (filtro === state.filtro) return;
+    // definiendo estado al cambiar filtro
     dispatch({ type: 'CAMBIAR_FILTRO', payload: filtro });
   };
 
   const irAPaginaAnterior = () => {
     if (state.pagina <= 1) return;
+    //definiendo estado al cambiar de pagina a anterior
     dispatch({ type: 'CAMBIAR_PAGINA', payload: state.pagina - 1 });
   };
 
   const irAPaginaSiguiente = () => {
     if (state.pagina >= state.totalPaginas) return;
+    //definiendo estado al cambiar de pagina a posterior
     dispatch({ type: 'CAMBIAR_PAGINA', payload: state.pagina + 1 });
   };
 
@@ -70,7 +76,10 @@ export default function PanelTransacciones() {
     exportarCSV(state.datos);
   };
 
+  console.log(state.datos);
+
   const hayDatos = state.datos.length > 0;
+  //no hay resultados cuando no se esta cragando, no hay error y no hay datos
   const sinResultados = !state.cargando && !state.error && !hayDatos;
 
   return (
@@ -79,17 +88,18 @@ export default function PanelTransacciones() {
         <h1>Transacciones</h1>
 
         <div className="panel-transacciones__filtros" role="group" aria-label="Filtrar por estado">
-          {FILTROS.map(({ valor, etiqueta }) => (
-            <button
-              key={valor}
-              type="button"
-              className={valor === state.filtro ? 'filtro filtro--activo' : 'filtro'}
-              onClick={() => cambiarFiltro(valor)}
-              aria-pressed={valor === state.filtro}
-            >
-              {etiqueta}
-            </button>
-          ))}
+          { //dibujando opciones para filtrado
+            FILTROS.map(({ valor, etiqueta }) => (
+              <button
+                key={valor}
+                type="button"
+                className={valor === state.filtro ? 'filtro filtro--activo' : 'filtro'}
+                onClick={() => cambiarFiltro(valor)}
+                aria-pressed={valor === state.filtro}
+              >
+                {etiqueta}
+              </button>
+            ))}
         </div>
 
         <button
@@ -172,11 +182,20 @@ export default function PanelTransacciones() {
   );
 }
 
+// para formatear cantidades a pesos mexicanos
 function formatearMonto(monto: number): string {
   return monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 }
 
+// para formatear fecha
 function formatearFecha(fechaISO: string): string {
   const fecha = new Date(fechaISO);
-  return Number.isNaN(fecha.getTime()) ? fechaISO : fecha.toLocaleDateString('es-MX');
+  const formato =
+    `${fecha.getFullYear()}-` +
+    `${String(fecha.getMonth() + 1).padStart(2, '0')}-` +
+    `${String(fecha.getDate()).padStart(2, '0')} ` +
+    `${String(fecha.getHours()).padStart(2, '0')}:` +
+    `${String(fecha.getMinutes()).padStart(2, '0')}:` +
+    `${String(fecha.getSeconds()).padStart(2, '0')}`;
+  return formato;
 }

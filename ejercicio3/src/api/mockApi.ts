@@ -19,7 +19,7 @@ const CLIENTES = [
 
 //funcion que genera arreglo de datos mock
 function generarDataset(): Transaccion[] {
-  const total = 21;
+  const total = 123;
   const datos: Transaccion[] = [];
 
   // funcion que retorna número aleatorio entre dos números
