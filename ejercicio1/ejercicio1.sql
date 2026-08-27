@@ -249,24 +249,24 @@ limit 5;
 select 
 	cl.id_cliente, 
 	cl.nombre, 
-	t1.id_transaccion AS transaccion_1, 
-	t2.id_transaccion AS transaccion_2, 
+	t1.id_transaccion AS transaccion_1, --transaccion1 
+	t2.id_transaccion AS transaccion_2, --posible transaccion sospechosa
 	t1.monto, 
 	t1.fecha AS fecha_1, 
 	t2.fecha AS fecha_2, 
 	ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) AS diferencia_segundos
 from transacciones t1
 inner join transacciones t2 
-	on t1.id_transaccion < t2.id_transaccion
-	and t1.monto  = t2.monto
-	and ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) < (5*60) --5 minutos
+	on t1.id_transaccion < t2.id_transaccion --comparando con transacciones más actuales
+	and t1.monto  = t2.monto --donde monto sea igual
+	and ABS(EXTRACT(EPOCH FROM (t1.fecha - t2.fecha))) < (5*60) --5 minutos, donde la diferencia entre fechas en segundos sea menor a 5min
 inner join cuentas c1
 	on c1.id_cuenta = t1.id_cuenta
 inner join cuentas c2
 	on c2.id_cuenta = t2.id_cuenta
-	and c1.id_cuenta = c2.id_cuenta
+	and c1.id_cuenta = c2.id_cuenta --verificando que sean transacciones de la misma cuenta
 inner join clientes cl
-	on cl.id_cliente = c1.id_cliente
+	on cl.id_cliente = c1.id_cliente --obteniendo datos de cliente
 order by diferencia_segundos;
 
 
