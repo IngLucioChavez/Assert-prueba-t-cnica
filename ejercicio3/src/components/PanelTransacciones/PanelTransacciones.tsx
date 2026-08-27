@@ -6,6 +6,8 @@ import { initialState, panelReducer } from './reducer';
 import { exportarCSV } from './csvExport';
 import './PanelTransacciones.css';
 
+// filtros permitidos con valor y etiqueta 
+// valor con respecto a estado del filtrado de la información
 const FILTROS: { valor: FiltroEstado; etiqueta: string }[] = [
   { valor: 'todas', etiqueta: 'Todas' },
   { valor: 'pendiente', etiqueta: 'Pendiente' },
@@ -14,6 +16,7 @@ const FILTROS: { valor: FiltroEstado; etiqueta: string }[] = [
 ];
 
 export default function PanelTransacciones() {
+  // creando reducer con estado inicial
   const [state, dispatch] = useReducer(panelReducer, initialState);
 
   const controllerRef = useRef<AbortController | null>(null);
@@ -26,6 +29,7 @@ export default function PanelTransacciones() {
 
     dispatch({ type: 'FETCH_INICIO' });
 
+    //promesa que retornado la data mock
     mockFetch(state.pagina, state.filtro)
       .then((respuesta) => {
         if (controller.signal.aborted) return;
